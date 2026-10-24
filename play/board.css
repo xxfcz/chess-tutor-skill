@@ -1,0 +1,33 @@
+/* ============================================================
+   CBoard — 对弈页 / 开局练习页 共用棋盘组件（样式部分）
+   页面只需在自己样式里给出 --board（棋盘尺寸），其余变量都有默认值：
+   --cb-light 浅格  --cb-dark 深格  --cb-sel 选中  --cb-last 上一步
+   --cb-dot 合法落点  --cb-border 边框
+   页面可覆盖；运行时也可调 CBoard.setTheme(key) 切换主题
+   ============================================================ */
+:root{--cb-light:#eee9d8;--cb-dark:#6f9a5e;--cb-sel:#3b82f6;--cb-last:#f6e05e;
+      --cb-dot:rgba(20,24,29,.38);--cb-border:#11151c}
+.board{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);
+  width:var(--board,min(440px,92vw));height:var(--board,min(440px,92vw));
+  margin:0 auto;border:3px solid var(--cb-border);border-radius:6px;overflow:hidden}
+.sq{position:relative;display:flex;align-items:center;justify-content:center;
+  font-size:calc(var(--board,min(440px,92vw))/9);cursor:pointer;user-select:none}
+.sq.l{background:var(--cb-light)}.sq.d{background:var(--cb-dark)}
+.sq .pc{line-height:1;font-weight:700}
+/* 白子：白字 + 双层深色描边；黑子：近黑字 + 白描边 —— 浅/深格里都清晰 */
+.sq .pc.w{color:#fff;text-shadow:0 0 1px #000,0 0 2px #000,0 1px 3px rgba(0,0,0,.85)}
+.sq .pc.b{color:#16181d;text-shadow:0 0 1px #fff,0 0 3px rgba(255,255,255,.9),0 1px 3px rgba(0,0,0,.35)}
+.sq.sel{box-shadow:inset 0 0 0 4px var(--cb-sel)}
+.sq.hl{box-shadow:inset 0 0 0 4px var(--cb-last)}
+/* 合法落点：空格实心点，有子的格画环（吃子） */
+.sq.tgt::after{content:'';width:26%;height:26%;border-radius:50%;
+  background:var(--cb-dot);position:absolute}
+.sq.tgt.cap::after{width:82%;height:82%;background:transparent;
+  border:3px solid var(--cb-dot);border-radius:50%}
+/* 坐标标注：底行列字母、最左列行号；半透明配色适配任意底色主题 */
+.sq .cf,.sq .cr{position:absolute;font-size:calc(var(--board,min(440px,92vw))/32);
+  line-height:1;pointer-events:none;font-weight:800;z-index:3}
+.sq .cf{right:3px;bottom:1px}
+.sq .cr{left:3px;top:1px}
+.sq.l .cf,.sq.l .cr{color:rgba(0,0,0,.4)}
+.sq.d .cf,.sq.d .cr{color:rgba(255,255,255,.75)}

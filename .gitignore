@@ -1,0 +1,10 @@
+# 忽略运行时产物与缓存
+__pycache__/
+*.pyc
+*.pyo
+play/live_feed.jsonl
+
+# 本地环境
+.venv/
+venv/
+.env

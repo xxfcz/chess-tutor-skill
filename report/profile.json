@@ -1,0 +1,229 @@
+{
+  "meta": {
+    "generated_at": "2026-10-24T01:20:16.348719+00:00",
+    "player": "Student",
+    "n_games": 3,
+    "n_player_moves": 109,
+    "loss_cap": 400.0
+  },
+  "global_summary": {
+    "n_player_moves": 109,
+    "acpl": 39.7,
+    "accuracy": 83.5,
+    "tier": "Competent",
+    "counts": {
+      "Best": 42,
+      "Good": 41,
+      "Inaccuracy": 13,
+      "Mistake": 8,
+      "Blunder": 5
+    },
+    "phase_moves": {
+      "opening": {
+        "n": 24,
+        "loss_sum": 356.0,
+        "avg_loss": 14.8
+      },
+      "middlegame": {
+        "n": 65,
+        "loss_sum": 102031.0,
+        "avg_loss": 1569.7
+      },
+      "endgame": {
+        "n": 20,
+        "loss_sum": 100391.0,
+        "avg_loss": 5019.6
+      }
+    }
+  },
+  "dimensions": [
+    {
+      "name": "开局稳定性",
+      "score": 85.2,
+      "n_moves": 24,
+      "note": "前 8 回合的局面把握"
+    },
+    {
+      "name": "中局计划",
+      "score": 54.1,
+      "n_moves": 65,
+      "note": "中局的子力协调与计划"
+    },
+    {
+      "name": "残局技术",
+      "score": 51.0,
+      "n_moves": 20,
+      "note": "少子力局面的技术"
+    },
+    {
+      "name": "计算精准度",
+      "score": 60.3,
+      "n_moves": 109,
+      "note": "逐着与最佳着的接近程度"
+    },
+    {
+      "name": "战术纪律",
+      "score": 81.2,
+      "n_moves": 109,
+      "note": "避免送子/漏算的频率"
+    },
+    {
+      "name": "心理稳定性",
+      "score": 70.0,
+      "n_moves": 0,
+      "note": "领先局面的转化能力"
+    }
+  ],
+  "weakest": [
+    {
+      "name": "残局技术",
+      "score": 51.0
+    },
+    {
+      "name": "中局计划",
+      "score": 54.1
+    },
+    {
+      "name": "计算精准度",
+      "score": 60.3
+    }
+  ],
+  "psychology_detail": {
+    "score": 70.0,
+    "n_winning": 0,
+    "n_converted": 0,
+    "note": "样本中没有明显领先且分出胜负的对局，暂无法评估"
+  },
+  "key_errors": [
+    {
+      "game": 2,
+      "ply": 43,
+      "san": "Nb1",
+      "label": "Blunder",
+      "loss_cp": 406.0,
+      "phase": "middlegame",
+      "tactical_reason": "主动送子/漏算防御：走子后己方子力悬空被吃",
+      "best_move": "h4f6",
+      "best_move_san": "Bxf6",
+      "fen_before": "2r1r1k1/1p3pp1/p2q1n1p/n2p1b2/3P3B/1BN2P1P/PP1Q2P1/3R1RK1 w - - 8 22",
+      "fen_after": "2r1r1k1/1p3pp1/p2q1n1p/n2p1b2/3P3B/1B3P1P/PP1Q2P1/1N1R1RK1 b - - 9 22",
+      "eval_before_cp": -8.0
+    },
+    {
+      "game": 3,
+      "ply": 25,
+      "san": "Bb3",
+      "label": "Blunder",
+      "loss_cp": 401.0,
+      "phase": "middlegame",
+      "tactical_reason": "错失战术机会：可吃子/得子却未走",
+      "best_move": "e6d7",
+      "best_move_san": "exd7",
+      "fen_before": "r1bq1r1k/pppn2pp/4Pb2/8/2B5/4B3/PPPQ1PPP/R3K2R w KQ - 1 13",
+      "fen_after": "r1bq1r1k/pppn2pp/4Pb2/8/8/1B2B3/PPPQ1PPP/R3K2R b KQ - 2 13",
+      "eval_before_cp": 141.0
+    },
+    {
+      "game": 1,
+      "ply": 45,
+      "san": "Qxg7+",
+      "label": "Blunder",
+      "loss_cp": 343.0,
+      "phase": "middlegame",
+      "tactical_reason": "错失战术机会：可吃子/得子却未走",
+      "best_move": "d5e7",
+      "best_move_san": "Nxe7+",
+      "fen_before": "2r1r1k1/1b2q1p1/p2bNp1B/1p1Nn3/3pP1QP/PP4P1/5P2/R3R1K1 w - - 1 23",
+      "fen_after": "2r1r1k1/1b2q1Q1/p2bNp1B/1p1Nn3/3pP2P/PP4P1/5P2/R3R1K1 b - - 0 23",
+      "eval_before_cp": 343.0
+    },
+    {
+      "game": 1,
+      "ply": 69,
+      "san": "Rad1",
+      "label": "Mistake",
+      "loss_cp": 182.0,
+      "phase": "endgame",
+      "tactical_reason": "判断或计算偏差：未识别局面关键点",
+      "best_move": "f2f3",
+      "best_move_san": "f3",
+      "fen_before": "4r3/5k2/p4p2/3b2n1/1B1p4/PP4P1/5P2/R4RK1 w - - 5 35",
+      "fen_after": "4r3/5k2/p4p2/3b2n1/1B1p4/PP4P1/5P2/3R1RK1 b - - 6 35",
+      "eval_before_cp": -19.0
+    },
+    {
+      "game": 1,
+      "ply": 63,
+      "san": "Bxb4",
+      "label": "Mistake",
+      "loss_cp": 177.0,
+      "phase": "endgame",
+      "tactical_reason": "判断或计算偏差：未识别局面关键点",
+      "best_move": "h1g2",
+      "best_move_san": "Kg2",
+      "fen_before": "8/5k2/p2B1p2/3b4/1p1pr3/PP3nP1/5P2/R4R1K w - - 0 32",
+      "fen_after": "8/5k2/p4p2/3b4/1B1pr3/PP3nP1/5P2/R4R1K b - - 0 32",
+      "eval_before_cp": -94.0
+    },
+    {
+      "game": 1,
+      "ply": 51,
+      "san": "Kh1",
+      "label": "Mistake",
+      "loss_cp": 152.0,
+      "phase": "middlegame",
+      "tactical_reason": "判断或计算偏差：未识别局面关键点",
+      "best_move": "g1f1",
+      "best_move_san": "Kf1",
+      "fen_before": "2r1N3/1b3k2/p2b1p1B/1p1N4/3pP2P/PP3nP1/5P2/R3R1K1 w - - 1 26",
+      "fen_after": "2r1N3/1b3k2/p2b1p1B/1p1N4/3pP2P/PP3nP1/5P2/R3R2K b - - 2 26",
+      "eval_before_cp": 91.0
+    },
+    {
+      "game": 3,
+      "ply": 27,
+      "san": "f4",
+      "label": "Mistake",
+      "loss_cp": 147.0,
+      "phase": "middlegame",
+      "tactical_reason": "判断或计算偏差：未识别局面关键点",
+      "best_move": "e1c1",
+      "best_move_san": "O-O-O",
+      "fen_before": "r1bq1r1k/ppp3pp/4Pb2/4n3/8/1B2B3/PPPQ1PPP/R3K2R w KQ - 3 14",
+      "fen_after": "r1bq1r1k/ppp3pp/4Pb2/4n3/5P2/1B2B3/PPPQ2PP/R3K2R b KQ - 0 14",
+      "eval_before_cp": -189.0
+    },
+    {
+      "game": 1,
+      "ply": 11,
+      "san": "Bd2",
+      "label": "Mistake",
+      "loss_cp": 110.0,
+      "phase": "opening",
+      "tactical_reason": "判断或计算偏差：未识别局面关键点",
+      "best_move": "e1g1",
+      "best_move_san": "O-O",
+      "fen_before": "rnbqkb1r/pp2ppp1/5n2/3p3p/3p4/P4NP1/1PP1PPBP/RNBQK2R w KQkq - 0 6",
+      "fen_after": "rnbqkb1r/pp2ppp1/5n2/3p3p/3p4/P4NP1/1PPBPPBP/RN1QK2R b KQkq - 1 6",
+      "eval_before_cp": -25.0
+    }
+  ],
+  "radar": {
+    "labels": [
+      "开局稳定性",
+      "中局计划",
+      "残局技术",
+      "计算精准度",
+      "战术纪律",
+      "心理稳定性"
+    ],
+    "scores": [
+      85.2,
+      54.1,
+      51.0,
+      60.3,
+      81.2,
+      70.0
+    ]
+  }
+}

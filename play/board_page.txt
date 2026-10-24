@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 教练 · 实时对弈（学员执白）</title>
+<link rel="stylesheet" href="/board.css">
+<style>
+  :root{
+    --bg:#1f2430; --panel:#2a3140; --txt:#e8ecf3; --muted:#9aa6b8;
+    --good:#48bb78; --warn:#ed8936; --bad:#f56565;
+    --board: min(480px, 92vw);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;}
+  .wrap{display:flex;gap:22px;padding:22px;flex-wrap:wrap;justify-content:center;}
+  .board-area{display:flex;flex-direction:column;gap:10px;}
+  /* 棋盘样式（.board/.sq/.pc/坐标/落点）由共用组件 board.css 提供，
+     与开局练习页完全同一套 UI；底色主题用 --cb-* 变量或 CBoard.setTheme 切换 */
+  .reminder{background:linear-gradient(90deg,#334155,#1e293b);border:1px solid #3b4658;
+    padding:10px 14px;border-radius:8px;font-size:13.5px;line-height:1.5;max-width:min(480px,92vw);}
+  .controls{display:flex;gap:10px;align-items:center;}
+  button{background:#3b82f6;color:#fff;border:0;padding:9px 16px;border-radius:8px;
+    font-size:14px;cursor:pointer;}
+  button.sec{background:#475569;}
+  .tbtn{font-size:13px;color:#cbd5e1;background:#475569;border:0;padding:9px 12px;
+    border-radius:8px;cursor:pointer;white-space:nowrap;}
+  .panel{width:min(360px,92vw);background:var(--panel);border-radius:12px;padding:18px;display:flex;
+    flex-direction:column;gap:16px;}
+  .panel h2{margin:0 0 4px;font-size:16px;}
+  .kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .kpi .cell{background:#1c2230;border-radius:8px;padding:10px;text-align:center;}
+  .kpi .cell .n{font-size:22px;font-weight:700;}
+  .kpi .cell .l{font-size:11px;color:var(--muted);}
+  .n.bad{color:var(--bad)} .n.warn{color:var(--warn)} .n.good{color:var(--good)}
+  .evalbar{height:14px;background:#b91c1c;border-radius:7px;overflow:hidden;}
+  .evalbar .fill{height:100%;background:#16a34a;width:50%;transition:width .25s;}
+  .coach{background:#0f2a1f;border:1px solid #1f4d35;border-radius:10px;padding:12px;
+    font-size:13.5px;line-height:1.55;min-height:60px;}
+  .coach.empty{background:#1c2230;border-color:#2a3344;color:var(--muted);}
+  .coach .tag{display:inline-block;padding:1px 8px;border-radius:6px;font-weight:700;
+    font-size:12px;margin-right:6px;}
+  .tag.Blunder{background:var(--bad);color:#fff}
+  .tag.Mistake{background:var(--warn);color:#111}
+  .moves{font-size:13px;line-height:1.7;max-height:230px;overflow:auto;
+    background:#1c2230;border-radius:8px;padding:10px;}
+  .moves .w{color:#cbd5e1}.moves .b{color:#7dd3fc}
+  .navlink{display:inline-block;padding:9px 14px;border-radius:8px;background:#0c2d48;
+    border:1px solid #0ea5e9;color:#7dd3fc;text-decoration:none;font-size:14px;font-weight:600}
+  .moves .san{cursor:pointer;padding:1px 5px;border-radius:5px;transition:all .15s}
+  .moves .san:hover{background:#334155}
+  .moves .san.dim{opacity:.32}
+  .moves .san.dim:hover{opacity:.7;background:#334155}
+  .moves .san.cur{background:#0ea5e9;color:#04202f;font-weight:700}
+  .peekbar{background:#0b3a53;border:1px solid #0ea5e9;border-radius:8px;padding:8px 10px;
+    font-size:12.5px;color:#bae6fd;margin-bottom:8px;display:none;align-items:center;gap:8px}
+  .peekbar.on{display:flex}
+  .peekbar button{margin-left:auto;background:#0ea5e9;border:none;color:#04202f;padding:3px 10px;
+    border-radius:6px;font-size:12px;font-weight:700;cursor:pointer}
+  .badge{font-size:10px;margin-left:2px;vertical-align:super}
+  .badge.bd{color:#f87171}.badge.bm{color:#fb923c}.badge.bb{color:#4ade80}
+  .moves .num{color:var(--muted);width:30px;display:inline-block}
+  .status{font-size:13px;color:var(--muted);}
+  .big{font-size:15px;font-weight:700;}
+  @media (max-width:560px){
+    .wrap{padding:12px;gap:14px}
+    .panel{width:92vw;padding:14px}
+    .reminder{max-width:92vw}
+    .kpi{grid-template-columns:repeat(3,1fr);gap:6px}
+    .controls{flex-wrap:wrap}
+    button{padding:11px 18px;font-size:15px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="board-area">
+    <div class="controls">
+      <button id="undoBtn">↩️ 悔一步</button>
+      <button id="newBtn">🔄 开新局</button>
+      <button id="openBtn">📖 开局模式</button>
+      <span class="tbtn" id="themeBtn" title="切换棋盘底色（练习页同步生效）">🎨 底色</span>
+      <a class="navlink" href="?view=train">🎓 开局练习</a>
+      <span class="status" id="status">学员执白 · 教练（降强度 Stockfish）执黑</span>
+    </div>
+    <div class="reminder" id="reminder">走前扫描…</div>
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="panel">
+    <div>
+      <h2>本局 KPI</h2>
+      <div class="status">目标：<b style="color:var(--good)">零送子</b>（Blunder = 0）</div>
+      <div class="kpi" id="kpi" style="margin-top:10px">
+        <div class="cell"><div class="n" id="k_best">0</div><div class="l">Best</div></div>
+        <div class="cell"><div class="n good" id="k_good">0</div><div class="l">Good</div></div>
+        <div class="cell"><div class="n" id="k_inacc">0</div><div class="l">Inaccuracy</div></div>
+        <div class="cell"><div class="n warn" id="k_mist">0</div><div class="l">Mistake</div></div>
+        <div class="cell"><div class="n bad" id="k_blun">0</div><div class="l">Blunder</div></div>
+        <div class="cell"><div class="n" id="k_moves">0</div><div class="l">总着数</div></div>
+      </div>
+    </div>
+    <div>
+      <h2>局面评估（白方视角）</h2>
+      <div class="evalbar"><div class="fill" id="evalFill"></div></div>
+      <div class="status" id="evalTxt" style="margin-top:6px">—</div>
+    </div>
+    <div>
+      <h2>教练点评</h2>
+      <div class="coach empty" id="coach">稳健。继续保持，每一步都先走完“扫描”再落子。</div>
+    </div>
+    <div>
+      <h2>AI 教练点评</h2>
+      <div id="notes"></div>
+    </div>
+    <div>
+      <h2>着法记录</h2>
+      <div class="peekbar" id="peekbar">
+        <span id="peektxt">正在回看历史</span>
+        <button id="peekExit">回到当前</button>
+      </div>
+      <div class="moves" id="moves"></div>
+    </div>
+  </div>
+</div>
+
+<script src="/board.js"></script>
+<script>
+let STATE = null;
+let selected = null;     // 选中的起点格名
+let legalTargets = [];   // 合法目标（含升变后缀）
+let lastMoveUci = null;
+
+const boardEl = document.getElementById('board');
+
+// 棋盘渲染走共用组件 CBoard（与开局练习页同一套 UI）
+function renderBoard(fen){
+  const hl = lastMoveUci ? [lastMoveUci.slice(0,2), lastMoveUci.slice(2,4)] : null;
+  CBoard.render(boardEl, fen, {sel:selected, tgts:legalTargets, hl:hl, onClick:onSquare});
+}
+
+// 底色主题：循环切换，localStorage 记忆（练习页同步生效）
+document.getElementById('themeBtn').addEventListener('click', ()=>{
+  const k = CBoard.cycleTheme();
+  document.getElementById('themeBtn').textContent = '🎨 ' + CBoard.THEMES[k].name;
+});
+(function(){
+  try{
+    const k = localStorage.getItem('cb-theme');
+    if(k && CBoard.THEMES[k])
+      document.getElementById('themeBtn').textContent = '🎨 ' + CBoard.THEMES[k].name;
+  }catch(e){}
+})();
+
+async function onSquare(sq){
+  if(!STATE || STATE.game_over) return;
+  const curFen = PEEK ? PEEK.fen : STATE.fen;
+  // 预览态下也允许落子——那意味着"从这里另开一条线"，会截断后续着法
+  const myTurn = PEEK ? (PEEK.turn === 'white') : (STATE.turn === 'white');
+  if(!myTurn) return;
+  if(selected === null){
+    // 选中己方棋子
+    const fen = curFen;
+    const grid = CBoard.parseFen(fen);
+    const r = 8 - (+sq[1]); const c = sq.charCodeAt(0)-97;
+    const pc = grid[r][c];
+    if(pc && pc===pc.toUpperCase()){
+      selected = sq;
+      const j = await post({action:'legal', square:sq, fen:curFen});
+      legalTargets = j.targets || [];
+      renderBoard(fen);
+    }
+    return;
+  }
+  // 已选中：尝试落子
+  let target = sq;
+  // 升变：若目标是升变目标的基名，默认升后
+  const promo = legalTargets.find(x=>x.startsWith(target) && x.length>4);
+  let moveUci = selected + target;
+  if(promo) moveUci = promo; // 含升变后缀
+  if(selected===sq){ // 取消选择
+    selected=null; legalTargets=[]; renderBoard(curFen); return;
+  }
+  if(legalTargets.some(x=>x.startsWith(target))){
+    selected=null; legalTargets=[];
+    await sendMove(moveUci);
+  } else {
+    // 改选别的己方子
+    const grid = CBoard.parseFen(curFen);
+    const r = 8-(+sq[1]); const c = sq.charCodeAt(0)-97;
+    const pc = grid[r][c];
+    if(pc && pc===pc.toUpperCase()){
+      selected = sq;
+      const j = await post({action:'legal', square:sq, fen:curFen}); legalTargets = j.targets||[];
+    } else { selected=null; legalTargets=[]; }
+    renderBoard(curFen);
+  }
+}
+
+async function post(body){
+  const res = await fetch('/', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  });
+  return await res.json();
+}
+
+async function sendMove(moveUci){
+  // 预览态下落子 = 从回看的那步另开新线：先回退到该步，再落子
+  if(PEEK){
+    const target = PEEK.ply;
+    const u = await post({action:'undo', to_ply:target});
+    if(u.error){ alert(u.error); return; }
+    STATE = u;
+    PEEK = null;
+  }
+  const j = await post({action:'move', move:moveUci, fen: STATE.fen});
+  if(j.error){ alert(j.error); return; }
+  STATE = j;
+  lastMoveUci = (j.last_student_move_uci) || lastMoveUci;
+  updateUI();
+  loadNotes();
+}
+
+function updateUI(){
+  renderBoard(PEEK ? PEEK.fen : STATE.fen);
+  // KPI
+  const k = STATE.kpi;
+  document.getElementById('k_best').textContent=k.Best;
+  document.getElementById('k_good').textContent=k.Good;
+  document.getElementById('k_inacc').textContent=k.Inaccuracy;
+  document.getElementById('k_mist').textContent=k.Mistake;
+  document.getElementById('k_blun').textContent=k.Blunder;
+  document.getElementById('k_moves').textContent=k.moves;
+  // 评估条
+  const ev = STATE.eval_white_cp ?? 0;
+  const pct = Math.max(2, Math.min(98, 50 + ev/20));
+  document.getElementById('evalFill').style.width = pct+'%';
+  document.getElementById('evalTxt').textContent =
+    Math.abs(ev)>=9000 ? (ev>0?'白方胜势/将杀':'黑方胜势/将杀') :
+    (ev>0?`白方 +${(ev/100).toFixed(1)}`:`黑方 +${(-ev/100).toFixed(1)}`) + '（约）';
+  // 教练点评
+  const coachEl = document.getElementById('coach');
+  const c = STATE.coaching;
+  if(c){
+    coachEl.className='coach';
+    coachEl.innerHTML =
+      `<span class="tag ${c.label}">${c.label}</span> 第 ${STATE.history.length} 着 ${c.san}`+
+      `<div style="margin-top:6px">损失 <b>${c.loss_cp}cp</b> · 阶段：${c.phase}</div>`+
+      (c.best_move?`<div>引擎首选：<b>${c.best_move}</b></div>`:'')+
+      (c.reason?`<div>原因：${c.reason}</div>`:'')+
+      (c.tailored?`<div style="margin-top:6px;color:#9ae6b4">${c.tailored}</div>`:'');
+  } else {
+    if(STATE.game_over){
+      coachEl.className='coach';
+      coachEl.innerHTML = `对局结束：<b>${STATE.result}</b>`;
+    } else {
+      coachEl.className='coach empty';
+      coachEl.textContent='稳健。继续保持，每一步都先走完“扫描”再落子。';
+    }
+  }
+  // 着法记录（点击 = 预览该步；预览态下再落子才会截断后续着法）
+  const mv = STATE.history;
+  const peekPly = PEEK ? PEEK.ply : mv.length;
+  const badge = (x)=>{
+    if(!x) return '';
+    const lb = x.label;
+    if(lb==='Blunder') return '<span class="badge bd">??</span>';
+    if(lb==='Mistake') return '<span class="badge bm">?</span>';
+    if(lb==='Best') return '<span class="badge bb">★</span>';
+    return '';
+  };
+  const span=(x,cls,plyAfter)=>{
+    if(!x) return '<span class="w">-</span>';
+    const cls2 = cls + (x.color==='white'?' w':' b');
+    // plyAfter <= peekPly → 已走（正常显示）；否则为"未来"着法 → 灰化
+    const future = plyAfter > peekPly;
+    const here = plyAfter === peekPly;
+    const dim = future ? ' dim' : '';
+    const cur = here && PEEK ? ' cur' : '';
+    const tip = future ? '点击预览这步' : (PEEK ? '点击回到这步' : '');
+    return `<span class="${cls2} san${dim}${cur}" data-ply="${plyAfter}" title="${tip}">${x.san}${badge(x)}</span>`;
+  };
+  let html='';
+  for(let i=0;i<mv.length;i+=2){
+    const w=mv[i], b=mv[i+1];
+    const num=Math.floor(i/2)+1;
+    html += `<div class="mrow"><span class="num">${num}.</span>`+
+            span(w,'w',i+1)+' '+
+            span(b,'b',i+2)+'</div>';
+  }
+  const box=document.getElementById('moves');
+  box.innerHTML = html || '<div class="status">——</div>';
+  // 绑定点击：只做预览，不改变棋局
+  box.querySelectorAll('.san').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const p=Number(el.dataset.ply);
+      if(Number.isFinite(p)) peekTo(p);
+    });
+  });
+  // 状态/提醒
+  document.getElementById('reminder').textContent = STATE.reminder;
+
+  // 开局模式横幅
+  let ob=document.getElementById('opbanner');
+  if(STATE.opening){
+    if(!ob){
+      ob=document.createElement('div');
+      ob.id='opbanner';
+      ob.style.cssText='background:#0c2d48;border:1px solid #0ea5e9;border-radius:8px;padding:8px 10px;font-size:12.5px;color:#bae6fd;margin-bottom:8px';
+      document.getElementById('reminder').parentNode.insertBefore(ob, document.getElementById('reminder'));
+    }
+    const n=(STATE.history||[]).length;
+    ob.textContent=`开局模式：${STATE.opening.name} · 已走 ${n}/${STATE.opening.target} 半回合`;
+  }else if(ob){ ob.remove(); }
+
+  // 预览提示条
+  const pb = document.getElementById('peekbar');
+  const pt = document.getElementById('peektxt');
+  if(PEEK){
+    const rest = mv.length - PEEK.ply;
+    pt.textContent = `👁 回看第 ${PEEK.ply} 着${PEEK.san?'（'+PEEK.san+'）':''} · 之后 ${rest} 着暂存 · 落子就会覆盖它们`;
+    pb.classList.add('on');
+  }else{
+    pb.classList.remove('on');
+  }
+  const st = document.getElementById('status');
+  if(STATE.game_over){
+    st.textContent = '对局结束：'+STATE.result+' — 点“开新局”再来一局';
+  } else if(STATE.turn==='white'){
+    st.textContent = '轮到你（白方）落子';
+  } else {
+    st.textContent = '教练思考中…';
+  }
+}
+
+async function newGame(resetFeed){
+  STATE = await post(resetFeed ? {action:'new', reset_feed:true} : {action:'new'});
+  selected=null; legalTargets=[]; lastMoveUci=null;
+  updateUI();
+  loadNotes();
+}
+
+// 页面加载：优先恢复进行中的棋局；只有后端没有棋局时才开新局
+async function boot(){
+  try{
+    const j = await post({action:'watch'});
+    if(j && j.fen){
+      STATE = j;
+      selected=null; legalTargets=[]; lastMoveUci=null;
+      updateUI();
+      loadNotes();
+      return;
+    }
+  }catch(e){/* 恢复失败则开新局 */}
+  await newGame();
+  loadNotes();
+}
+
+// 拉取 AI 教练点评（feed 中的 coach_note），渲染到对弈页
+async function loadNotes(){
+  try{
+    const recs = await post({action:'feed'});
+    const notes = (recs||[]).filter(x=>x.event==='coach_note');
+    const box = document.getElementById('notes');
+    if(!box) return;
+    if(!notes.length){ box.innerHTML='<div style="color:#94a3b8;font-size:13px">暂无点评。下几步后叫我「讲讲这盘」即可。</div>'; return; }
+    box.innerHTML='';
+    notes.slice(-3).reverse().forEach(x=>{
+      const d=document.createElement('div');
+      d.style.cssText='background:linear-gradient(135deg,#0b3a53,#0e2a3d);border:1px solid #0ea5e9;border-left:4px solid #38bdf8;border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:14px;line-height:1.65;white-space:pre-wrap';
+      const who=document.createElement('div');
+      who.style.cssText='font-size:11px;color:#38bdf8;font-weight:700;margin-bottom:4px';
+      who.textContent='🧑‍🏫 AI 教练 · '+(x.ts||'');
+      const body=document.createElement('div');
+      body.textContent=x.text||'';
+      d.appendChild(who); d.appendChild(body); box.appendChild(d);
+    });
+  }catch(e){}
+}
+
+// 预览某一历史步（只读，不改变棋局）
+let PEEK = null;  // {ply, fen, san} 或 null（表示在看当前局面）
+
+async function peekTo(ply){
+  const cur = (STATE.history||[]).length;
+  if(ply >= cur){ clearPeek(); return; }
+  const j = await post({action:'peek', to_ply:ply});
+  if(j.error){ return; }
+  PEEK = j;
+  selected=null; legalTargets=null;
+  updateUI();
+}
+
+function clearPeek(){
+  if(!PEEK) return;
+  PEEK = null;
+  selected=null; legalTargets=null;
+  updateUI();
+}
+
+// 悔棋到指定步数（保留前 toPly 步）—— 真正修改棋局
+async function undoTo(toPly){
+  const j = await post({action:'undo', to_ply:toPly});
+  if(j.error){ alert(j.error); return; }
+  STATE = j;
+  PEEK = null;
+  selected=null; legalTargets=null;
+  // 标记最后一步用于高亮
+  const h=j.history;
+  lastMoveUci = h.length ? h[h.length-1].uci : null;
+  updateUI();
+}
+
+document.getElementById('peekExit').addEventListener('click', clearPeek);
+
+// ---------- 开局模式 ----------
+const OPENS=[
+  ['italian','意大利开局','e4'],['italian_two_knights','意大利·双马','e4'],
+  ['spanish','西班牙开局','e4'],['four_knights','四马开局','e4'],
+  ['scotch','苏格兰开局','e4'],
+  ['london','伦敦体系','d4'],['queens_gambit','后翼弃兵','d4'],
+  ['catalan','卡特兰开局','d4'],
+];
+document.getElementById('openBtn').addEventListener('click', ()=>{
+  let box=document.getElementById('opbox');
+  if(box){ box.remove(); return; }
+  box=document.createElement('div');
+  box.id='opbox';
+  box.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:99;display:flex;align-items:center;justify-content:center;padding:16px';
+  const inner=document.createElement('div');
+  inner.style.cssText='background:#1c2230;border:1px solid #2a3447;border-radius:14px;padding:16px;max-width:440px;width:100%;max-height:80vh;overflow:auto';
+  inner.innerHTML='<div style="font-size:16px;font-weight:700;margin-bottom:4px">选择开局</div>'+
+    '<div style="font-size:12px;color:#94a3b8;margin-bottom:12px">对手会按该开局的标准变化应招，方便你体会真实结构</div>';
+  const list=document.createElement('div');
+  list.style.cssText='display:flex;flex-direction:column;gap:7px';
+  OPENS.forEach(([id,nm,fam])=>{
+    const it=document.createElement('div');
+    it.style.cssText='padding:11px 13px;background:#151b27;border:1px solid #2a3447;border-radius:9px;cursor:pointer;display:flex;gap:8px;align-items:center';
+    it.innerHTML=`<span style="font-weight:600">${nm}</span><span style="font-size:11px;color:#64748b;margin-left:auto">${fam}</span>`;
+    it.onmouseenter=()=>it.style.borderColor='#38bdf8';
+    it.onmouseleave=()=>it.style.borderColor='#2a3447';
+    it.onclick=async()=>{
+      box.remove();
+      const j=await post({action:'open', id});
+      if(j.error){ alert(j.error); return; }
+      STATE=j; PEEK=null; selected=null; legalTargets=null; lastMoveUci=null;
+      updateUI(); loadNotes();
+    };
+    list.appendChild(it);
+  });
+  const close=document.createElement('button');
+  close.textContent='取消';
+  close.style.cssText='margin-top:12px;padding:9px 16px;border:none;border-radius:8px;background:#334155;color:#cbd5e1;font-size:13px;cursor:pointer;width:100%';
+  close.onclick=()=>box.remove();
+  inner.appendChild(list); inner.appendChild(close);
+  box.appendChild(inner);
+  box.onclick=(e)=>{ if(e.target===box) box.remove(); };
+  document.body.appendChild(box);
+});
+
+document.getElementById('newBtn').addEventListener('click', ()=>newGame(true));
+// 悔一步：直接回退到"你上一步走之前"（真正修改棋局）
+document.getElementById('undoBtn').addEventListener('click', ()=>{
+  const n = PEEK ? PEEK.ply : (STATE.history||[]).length;
+  if(n===0){ return; }
+  const hist = STATE.history;
+  let idx = n;
+  for(let i=n-1;i>=0;i--){ if(hist[i].color==='white'){ idx=i; break; } }
+  undoTo(idx);
+});
+boot();
+// 定时刷新点评：我推送后无需手动刷新页面
+setInterval(()=>{ try{ loadNotes(); }catch(e){} }, 8000);
+</script>
+</body>
+</html>

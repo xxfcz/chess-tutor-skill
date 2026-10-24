@@ -1,0 +1,36 @@
+[Event "Sample Coaching Game (seed 1)"]
+[Site "Local"]
+[Date "2026.10.10"]
+[Round "1"]
+[White "Student"]
+[Black "Opponent"]
+[Result "*"]
+[WhiteElo "1350"]
+[BlackElo "2000"]
+
+1. d4 d5 2. g3 c5 3. Nf3 cxd4 4. Bg2 Nf6 5. a3 h5 6. Bd2 b5 7. c3 e6 8. cxd4 Be7 9. O-O Nbd7 10. b3 Bb7 11. Nc3 a6 12. e3 O-O 13. Ng5 Rc8 14. h4 Bd6 15. Re1 e5 16. e4 Re8 17. Bh3 Ng4 18. Bxg4 hxg4 19. Qxg4 f6 20. Ne6 Qe7 21. Bh6 exd4 22. Nxd5 Ne5 23. Qxg7+ Qxg7 24. Nxg7 Kf7 25. Nxe8 Nf3+ 26. Kh1 Rxe8 27. Rf1 Rxe4 28. Bf4 Bxd5 29. Bxd6 Nxh4 30. Kg1 Nf3+ 31. Kh1 b4 32. Bxb4 Re2 33. Kg2 Ng5+ 34. Kg1 Re8 35. Rad1 Nh3+ 36. Kh2 Ng5 37. Kg1 Nf3+ 38. Kh1 a5 39. Kg2 Ra8 40. Bc5 Rc8 *
+
+[Event "Sample Coaching Game (seed 2)"]
+[Site "Local"]
+[Date "2026.10.10"]
+[Round "2"]
+[White "Student"]
+[Black "Opponent"]
+[Result "0-1"]
+[WhiteElo "1350"]
+[BlackElo "2000"]
+
+1. Nf3 Nf6 2. c4 e6 3. d4 d5 4. Nc3 c5 5. cxd5 cxd4 6. Nxd4 exd5 7. Bg5 Be7 8. e3 Nc6 9. Bb5 Bd7 10. O-O O-O 11. Ba4 Rc8 12. Bb3 h6 13. Bf4 Bc5 14. h3 Be6 15. Qd3 Bxd4 16. exd4 Qd7 17. f3 a6 18. Bg3 Rfe8 19. Bh4 Bf5 20. Qd2 Qd6 21. Rad1 Na5 22. Nb1 Nxb3 23. axb3 Rc2 24. Qa5 Qf4 25. Rfe1 Bxh3 26. Rxe8+ Nxe8 27. Qb4 Rxg2+ 28. Kf1 Rxb2+ 29. Ke1 Qxh4# 0-1
+
+[Event "Sample Coaching Game (seed 3)"]
+[Site "Local"]
+[Date "2026.10.10"]
+[Round "3"]
+[White "Student"]
+[Black "Opponent"]
+[Result "*"]
+[WhiteElo "1350"]
+[BlackElo "2000"]
+
+1. e4 e5 2. Nf3 d6 3. d4 exd4 4. Nxd4 Be7 5. Be3 Nf6 6. Nc3 O-O 7. Qd2 d5 8. Nxd5 Nxd5 9. exd5 Bf6 10. Bc4 Nd7 11. Ne6 fxe6 12. dxe6 Kh8 13. Bb3 Ne5 14. f4 Bh4+ 15. Bf2 Qxd2+ 16. Kxd2 Bxf2 17. fxe5 Bc5 18. Kd3 a5 19. Rhe1 Re8 20. c3 g6 21. a4 Bf8 22. Rf1 Bg7 23. Kc2 Bxe6 24. h4 Bxe5 25. Rad1 Bf5+ 26. Kc1 Bg4 27. Rd2 Rf8 28. Bf7 Bg7 29. Kc2 b6 30. Rf4 Be6 31. Bxe6 Bh6 32. Rxf8+ Rxf8 33. Rd4 Be3 34. Rd7 Rf2+ 35. Kb3 Rxg2 36. Rd8+ Kg7 37. Rd7+ Kh8 38. Rd8+ Kg7 39. h5 Kf6 40. Bg8 gxh5 *
+

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI 教练实时旁白</title>
+<style>
+:root{--bg:#0f172a;--panel:#1c2230;--line:#2a3447;--muted:#94a3b8;--txt:#e2e8f0;--acc:#38bdf8;--warn:#f87171}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;padding:16px}
+h1{font-size:18px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:12px;margin-bottom:14px}
+a.back{color:var(--acc);font-size:12px;text-decoration:none}
+#feed{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.item{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.55}
+.item.move{display:flex;gap:10px;align-items:baseline}
+.ply{color:var(--muted);font-size:12px;min-width:34px}
+.san{font-weight:700;font-size:17px}
+.white .san{color:var(--txt)} .black .san{color:var(--acc)}
+.coach{border-color:#7c2d12;background:#2a1a12}
+.coach .lab{display:inline-block;padding:1px 8px;border-radius:6px;font-size:12px;font-weight:700;margin-right:6px}
+.Blunder{background:var(--warn);color:#1a0000} .Mistake{background:#fb923c;color:#1a0a00}
+.kpi{background:#10233a;font-size:13px;color:var(--muted)}
+.note{background:linear-gradient(135deg,#0b3a53,#0e2a3d);border-color:#0ea5e9;border-left:4px solid var(--acc)}
+.note .who{font-size:11px;color:var(--acc);font-weight:700;letter-spacing:.5px;margin-bottom:4px}
+.note .txt{font-size:14px;line-height:1.65;white-space:pre-wrap}
+.narr{background:#161d2b;border-color:#243147;color:#b9c6d8;font-size:13px;line-height:1.6;border-left:3px solid #475569}
+.narr .who{font-size:11px;color:#64748b;margin-bottom:3px}
+.sep{text-align:center;color:var(--muted);font-size:12px;border:none;background:none}
+</style>
+</head>
+<body>
+<h1>♟️ AI 教练实时旁白</h1>
+<div class="sub">每一步自动记录 · 每 2 秒刷新 · 数据源 live_feed.jsonl &nbsp;·&nbsp; <a class="back" href="/">← 返回对弈</a></div>
+<div id="feed"><div class="item sep">等待棋局数据…</div></div>
+<script>
+const feedEl=document.getElementById('feed');
+function esc2(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+let lastLen=0;
+async function pull(){
+  try{
+    const r=await fetch('/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'feed'})});
+    const data=await r.json();
+    const recs=Array.isArray(data)?data:(data.feed||[]);
+    if(recs.length!==lastLen){
+      lastLen=recs.length;
+      render(recs);
+    }
+  }catch(e){/* 忽略瞬时错误 */}
+}
+function render(recs){
+  feedEl.innerHTML='';
+  for(const x of recs){ feedEl.appendChild(node(x)); }
+  feedEl.scrollTop=feedEl.scrollHeight;
+}
+function node(x){
+  const d=document.createElement('div');
+  if(x.event==='move'){
+    d.className='item move '+(x.color==='white'?'white':'black');
+    d.innerHTML=`<span class="ply">${x.ply}.</span><span class="san">${x.san}</span>`;
+  }else if(x.event==='coaching'){
+    d.className='item coach';
+    const labCls=x.label==='Blunder'?'Blunder':'Mistake';
+    d.innerHTML=`<div><span class="lab ${labCls}">${x.label}${x.loss_cp!=null?' -'+x.loss_cp+'cp':''}</span>${x.phase||''}</div>`+
+      (x.best?`<div>最佳着：${x.best}</div>`:'')+
+      (x.reason?`<div>原因：${x.reason}</div>`:'')+
+      (x.tailored?`<div style="color:var(--muted)">${x.tailored}</div>`:'');
+  }else if(x.event==='coach_note'){
+    d.className='item note';
+    d.innerHTML=`<div class="who">🧑‍🏫 AI 教练 · ${x.ts||''}</div><div class="txt">${esc2(x.text||'')}</div>`;
+  }else if(x.event==='narration'){
+    d.className='item narr';
+    d.innerHTML=`<div class="who">解说 · 第 ${x.ply||''} 手</div>${esc2(x.text||'')}`;
+  }else if(x.event==='kpi'){
+    const k=x.kpi||{};
+    d.className='item kpi';
+    d.textContent=`KPI — 最佳 ${k.Best||0} · 良好 ${k.Good||0} · 欠佳 ${k.Inaccuracy||0} · 失误 ${k.Mistake||0} · 大漏 ${k.Blunder||0} · 共 ${k.moves||0} 步`;
+  }else if(x.event==='new_game'){
+    d.className='item sep';d.textContent='—— 新局开始 ——';
+  }else if(x.event==='game_over'){
+    d.className='item sep';d.textContent='终局：'+(x.result||'');
+  }else if(x.event==='sync'){
+    d.className='item sep';d.textContent='已同步局面（'+x.moves+' 步）';
+  }else if(x.event==='bridge_start'){
+    d.className='item sep';d.textContent='观战桥已启动';
+  }else{
+    d.className='item sep';d.textContent=JSON.stringify(x);
+  }
+  return d;
+}
+pull();
+setInterval(pull,2000);
+</script>
+</body>
+</html>
