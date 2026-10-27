@@ -8,3 +8,6 @@ play/live_feed.jsonl
 .venv/
 venv/
 .env
+
+# dev_up.sh 运行日志
+.run/
